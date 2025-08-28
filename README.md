@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📌 아이콤 (육아 지원 콤파스)
 
-## Getting Started
+위치 기반 육아 지원 플랫폼으로, 미혼모·미혼부 및 한부모 가정 또는 초보 부모들이 겪는 정보 접근성 문제와 복지 사각지대를 해소하고, 서울시 저출산 문제 해결에 기여하는 것을 목표로 합니다.  
+공공데이터 기반 지도 서비스, AI 챗봇, 맞춤형 정책 추천, 육아 커뮤니티 기능을 통해 시민들이 실생활에서 쉽게 활용할 수 있는 육아 지원 서비스를 제공합니다.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🧠 프로젝트 개요
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- 서울시 내 육아·보육시설, 정책정보, 지원 기관을 **지도로 시각화**
+- **AI 챗봇**과 설문 기반 **맞춤형 혜택 추천 기능** 제공
+- **공동육아 커뮤니티·육아용품 공유** 기능을 통한 시민 참여 확대
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎯 목적 및 기대효과
 
-## Learn More
+- 흩어진 육아·복지 정보 접근성 개선
+- 한부모 가정 및 초보 부모의 정책 정보 접근성 향상
+- 보육시설·복지기관 위치 시각화로 실질적인 정보 제공
+- 맞춤형 정책 매칭 및 AI 상담을 통한 정보 격차 해소
+- 커뮤니티와 공유경제 기능으로 육아 스트레스 완화 및 정책 체감도 향상
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔍 주요 기능
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **위치 기반 지도 서비스**: 어린이집, 유치원, 지원센터, 공공 편의시설 시각화
+2. **출산·양육 정책 매칭**: 가족 형태·소득·자녀 수 기반 정책 추천
+3. **AI 육아 상담 챗봇**: 자연어 질의 응답 및 위치 기반 안내
+4. **사용자 맞춤 추천**: 반경 내 보육시설, 정책, 기관 추천
+5. **초보 부모 서비스**: 육아 캘린더, 성장 체크리스트, AI 육아팁 콘텐츠
+6. **커뮤니티·공유경제**: 부모 게시판, 공동구매, 중고거래, 베이비시터 매칭
+7. **정책 알림/가이드**: 자치구별 신청 일정 캘린더 및 알림 서비스
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📊 활용 공공데이터
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 서울시 키즈카페, 도서관, 놀이터 등 위치 데이터
+- 여성가족부 아이돌보미 서비스 API
+- 보건복지부 및 서울시 공공데이터 포털
+- 외부 서비스(중고나라, 번개장터 등) 제휴 가능성 검토
+
+---
+
+## 🛠 개발 환경 및 스택
+
+- **Frontend**: Next.js 15, Tailwind CSS
+- **Backend**: Express, Prisma
+- **지도 API**: Kakao Maps / Naver Maps
+- **AI 챗봇**: OpenAI GPT or Rasa
+- **데이터 관리**: React Query, SWR, IndexedDB 캐싱
+
+---
+
+## 👤 타겟 사용자
+
+- 서울시 미혼모·미혼부 및 한부모 가정
+- 첫 아이를 둔 초보 부모
+- 육아 관련 커뮤니티가 부족하다고 느끼는 시민
+- 정책 정보 접근이 어려운 일반 시민
+
+---
+
+## ✅ 기대성과
+
+- 정책 이해 및 신청률 증가
+- 정보 접근성 개선으로 시민 만족도 상승
+- 커뮤니티 기반 자발적 참여 활성화
+- 행정 효율성 제고 및 정책 체감도 강화
+
+---
+
+## 🔗 참고 자료
+
+- [서울시 저출산 종합대책](https://love.seoul.go.kr/articles/10256)
+- [서울시 공공데이터포털](https://data.seoul.go.kr/)
+- [보건복지부 공공데이터포털](https://www.data.go.kr/)
