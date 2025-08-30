@@ -9,40 +9,41 @@ type Place = {
   lng: number;
 };
 
-// Very lightweight dev fallback around current lat/lng
-function stubPlaces(query: string, lat: number, lng: number): Place[] {
-  const centers: Array<{ name: string; category: string }> = query.includes(
-    "소아",
-  )
-    ? [
-        { name: "해맑은 소아청소년과", category: "소아과" },
-        { name: "튼튼 소아과의원", category: "소아과" },
-        { name: "스마일 키즈의원", category: "소아과" },
-      ]
-    : [
-        { name: "아이랑 카페", category: "아이 동반 카페" },
-        { name: "맘스키친", category: "아이 동반 카페" },
-        { name: "키즈프렌들리", category: "아이 동반 카페" },
-      ];
-
-  return centers.map((c, i) => {
-    const dLat = (Math.cos(i * 2) * 0.004) / 1.0; // ~400m
-    const dLng = (Math.sin(i * 2) * 0.004) / 1.0; // ~400m
-    return {
-      id: `${c.category}-${i}`,
-      name: c.name,
-      category: c.category,
-      address: undefined,
-      lat: lat + dLat,
-      lng: lng + dLng,
-    };
-  });
+// Resolve Kakao REST key from a few common env names
+function getKakaoKey(): string | null {
+  return (
+    process.env.KAKAO_REST_API_KEY ||
+    process.env.KAKAO_API_KEY ||
+    process.env.KAKAO_LOCAL_REST_API_KEY ||
+    process.env.KAKAO_REST_KEY ||
+    null
+  );
 }
 
+/**
+ * GET /api/places
+ * Query params:
+ *  - q: keyword
+ *  - lat, lng: center coords (WGS84)
+ *  - radius: optional meters (default 1500, max 20000 per Kakao)
+ *  - page, size: optional pagination (defaults page=1,size=15)
+ */
 export async function GET(req: NextRequest) {
   const query = (req.nextUrl.searchParams.get("q") || "").trim();
   const lat = parseFloat(req.nextUrl.searchParams.get("lat") || "NaN");
   const lng = parseFloat(req.nextUrl.searchParams.get("lng") || "NaN");
+  const radius = Math.min(
+    20000,
+    Math.max(1, parseInt(req.nextUrl.searchParams.get("radius") || "1500", 10)),
+  );
+  const page = Math.max(
+    1,
+    parseInt(req.nextUrl.searchParams.get("page") || "1", 10),
+  );
+  const size = Math.min(
+    45,
+    Math.max(1, parseInt(req.nextUrl.searchParams.get("size") || "15", 10)),
+  );
 
   if (!query) {
     return NextResponse.json(
@@ -57,8 +58,53 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // TODO: Replace with real Naver Local/Place API integration when keys ready.
-  // For now, provide nearby stub data so the UI flows can be validated.
-  const results = stubPlaces(query, lat, lng);
-  return NextResponse.json({ results });
+  const KAKAO_KEY = getKakaoKey();
+  if (!KAKAO_KEY) {
+    return NextResponse.json(
+      { error: "Server key missing: set KAKAO_REST_API_KEY" },
+      { status: 500 },
+    );
+  }
+
+  // Kakao Local Keyword Search (radius). Note: x=lng, y=lat per Kakao docs.
+  const url = new URL("https://dapi.kakao.com/v2/local/search/keyword.json");
+  url.searchParams.set("query", query);
+  url.searchParams.set("x", String(lng));
+  url.searchParams.set("y", String(lat));
+  url.searchParams.set("radius", String(radius));
+  url.searchParams.set("page", String(page));
+  url.searchParams.set("size", String(size));
+  url.searchParams.set("sort", "distance");
+
+  const r = await fetch(url.toString(), {
+    headers: {
+      Authorization: `KakaoAK ${KAKAO_KEY}`,
+      Accept: "application/json",
+    },
+  });
+
+  if (!r.ok) {
+    let payload: unknown = null;
+    try {
+      payload = await r.json();
+    } catch {}
+    return NextResponse.json(
+      { error: "Kakao Local search failed", raw: payload },
+      { status: r.status },
+    );
+  }
+
+  const data = (await r.json()) as any;
+  const docs: any[] = Array.isArray(data?.documents) ? data.documents : [];
+  const results: Place[] = docs.map((d) => ({
+    id: String(d?.id ?? d?.place_id ?? `${d?.x}-${d?.y}`),
+    name: String(d?.place_name ?? d?.name ?? "").trim(),
+    category: String(d?.category_name ?? d?.category ?? "").trim(),
+    address:
+      String(d?.road_address_name || d?.address_name || "").trim() || undefined,
+    lat: parseFloat(d?.y), // Kakao returns y(lat), x(lng) as strings
+    lng: parseFloat(d?.x),
+  }));
+
+  return NextResponse.json({ results, meta: data?.meta ?? null });
 }

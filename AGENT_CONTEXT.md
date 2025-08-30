@@ -29,12 +29,18 @@ NEXT_PUBLIC_NCP_KEY_ID=your_public_key_id
 # Naver Cloud Reverse Geocoding (server-side)
 NCP_API_KEY_ID=your_api_key_id
 NCP_API_KEY=your_api_key_secret
+
+# Kakao Local Search (server-side)
+# Used for POI keyword search with radius, rendered on Naver Map
+KAKAO_REST_API_KEY=your_kakao_rest_api_key
 ```
 
 Notes:
 
 - `NEXT_PUBLIC_NCP_KEY_ID` is embedded in the client bundle (public).
 - `NCP_API_KEY_ID` and `NCP_API_KEY` are server-only and used by the API route.
+- `KAKAO_REST_API_KEY` is server-only and sent as `Authorization: KakaoAK <key>` to Kakao Local API.
+- Kakao Developers console: enable the "Map & Local (OPEN_MAP_AND_LOCAL)" product for the app, otherwise `/api/places` returns 403 NotAuthorized.
 
 ## Key Files and Flow
 
@@ -42,12 +48,14 @@ Notes:
   - `src/app/layout.tsx:1`: Injects Naver Maps SDK with callback `__initNaverMaps` and fires a custom DOM event `naver-maps-loaded`. Reads `process.env.NEXT_PUBLIC_NCP_KEY_ID`.
 - Reverse Geocoding API (server)
   - `src/app/api/revgeo/route.ts:1`: GET `/api/revgeo?lat={lat}&lng={lng}`. Calls Naver Cloud Reverse Geocode API using `NCP_API_KEY_ID` and `NCP_API_KEY`. Returns `{ address, raw }`.
+- Places Search API (server)
+  - `src/app/api/places/route.ts:1`: GET `/api/places?q={q}&lat={lat}&lng={lng}&radius={m}&page={n}&size={n}`. Calls Kakao Local Keyword Search with radius; sorts by `distance` server-side. Maps Kakao fields to the local `Place` shape (`name`, `category`, `address`, `lat` from `y`, `lng` from `x`). Returns `{ results, meta }`.
 - Geolocation (client) and state
   - `src/shared/hooks/useGeolocation.ts:1`: Provides `fetchLocation()` and calls `/api/revgeo` to set a human-readable `address`.
   - `src/shared/store/location.store.ts:1`: `zustand` store with `{ location, address, locating, resolving }` and setters.
 - Map UI
   - `src/features/map/components/NaverMap.tsx:1`: Creates a map centered at stored location after SDK is available.
-  - `src/features/map/components/MapService.tsx:1`: Composes sidebar and map view; placeholder for search state.
+  - `src/features/map/components/MapService.tsx:1`: Orchestrates search and state. On query + location, calls `/api/places` and renders markers via `NaverMap`. Selecting a result pans the map to the place.
   - `src/features/map/components/MapSidebar.tsx:1`: Hosts search UI (uses Landing `SearchBar`).
   - `src/features/map/components/MapView.tsx:1`: Wrapper around `NaverMap`.
 - Shared UI and Landing
@@ -80,6 +88,7 @@ References:
 - Prefer feature-first structure under `src/features/<domain>/components`.
 - Keep server-only secrets out of the client; only `NEXT_PUBLIC_*` should be used on the client.
 - Use `zustand` store for cross-component UI state like location.
+- Communication: All AI assistant responses must be in Korean only.
 
 ## Known Gaps / Cleanup
 
@@ -88,13 +97,23 @@ References:
 - Export mismatch (not currently used): `src/features/map/components/index.ts:1` re-exports `NaverMap` as a named export, but the component has a default export.
 - `components.json` alias entries reference `@/libs/*` paths that do not exist; keep using `@/*` from `tsconfig.json`.
 
+- On some desktop environments, browser geolocation can be inaccurate or blocked; users may need a manual way to set the current center.
+
 ## TODO (Agent)
 
 - Implement `auto` behavior in `useGeolocation` (optional, opt-in) and wire to landing.
 - Add basic error UI for `/api/revgeo` failures (e.g., toast, inline message).
-- Extend map: search integration and markers list; connect sidebar results to map focus.
+- Extend map: search integration and markers list; connect sidebar results to map focus. [Done: Kakao Local search + Naver render]
 - Harden env handling: graceful fallbacks when keys are missing; friendly setup notice.
 - Fix `index.ts` re-export in `src/features/map/components` if/when it's used.
+
+## Planned Features
+
+- Desktop-only manual location picker: Add a control to the MapView (bottom-right) that, when activated on desktop, lets the user drop/drag a marker to set the "current location". This will:
+  - Update `useLocationStore.location` with the chosen coordinates.
+  - Trigger reverse-geocoding to refresh the address label.
+  - Re-run `/api/places` search from the new center.
+  - Remain hidden on mobile (where geolocation works reliably) and visible on desktop via viewport or UA heuristics.
 
 ## Runbook (Local)
 
