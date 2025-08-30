@@ -1,20 +1,18 @@
 import { MapPin } from "lucide-react";
+import type { Place } from "@/features/map/types/place";
 
 // 검색 결과 목록 컴포넌트 props 인터페이스
 interface ISearchResultListProps {
-  results?: Array<{
-    id: string;
-    name: string;
-    address: string;
-    category: string;
-  }>;
+  results?: Place[];
   isLoading?: boolean;
+  onSelect?: (p: Place) => void;
 }
 
 // 검색 결과 목록 컴포넌트
 export function SearchResultList({
   results = [],
   isLoading = false,
+  onSelect,
 }: ISearchResultListProps) {
   if (isLoading) {
     return (
@@ -61,6 +59,7 @@ export function SearchResultList({
             <div
               key={result.id}
               className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              onClick={() => onSelect?.(result)}
             >
               <h3 className="font-medium text-gray-900 mb-1">{result.name}</h3>
               <p className="text-sm text-gray-600 mb-1">{result.address}</p>

@@ -20,6 +20,16 @@ type RevGeoResponse = { results?: RevGeoResult[] };
 const BASE = "https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc";
 
 export async function GET(req: NextRequest) {
+  // 환경 변수 가드: 서버 키가 없으면 친화적인 에러 반환
+  if (!process.env.NCP_API_KEY_ID || !process.env.NCP_API_KEY) {
+    return NextResponse.json(
+      {
+        error:
+          "Server keys missing: set NCP_API_KEY_ID and NCP_API_KEY on the server.",
+      },
+      { status: 500 },
+    );
+  }
   const lat = req.nextUrl.searchParams.get("lat");
   const lng = req.nextUrl.searchParams.get("lng");
   if (!lat || !lng) {
@@ -42,10 +52,23 @@ export async function GET(req: NextRequest) {
     // GET by default
   });
 
+  // 실패 응답이면 에러 전달
+  if (!r.ok) {
+    let payload: unknown = null;
+    try {
+      payload = await r.json();
+    } catch {}
+    return NextResponse.json(
+      { error: "Reverse geocoding failed", raw: payload },
+      { status: r.status },
+    );
+  }
+
   const data = (await r.json()) as unknown;
 
   // 안전 파싱: 가장 “사람이 읽기 좋은” 주소 한 개만 뽑아 반환
-  const best: RevGeoResult | null = (data as RevGeoResponse)?.results?.[0] ?? null;
+  const best: RevGeoResult | null =
+    (data as RevGeoResponse)?.results?.[0] ?? null;
 
   const toText = (node: RevGeoResult | null): string | null => {
     if (!node) return null;
@@ -71,6 +94,8 @@ export async function GET(req: NextRequest) {
   };
 
   const address = toText(best);
+  // 동/읍/면 명칭(법정동/행정동 수준). area3가 기본, 없으면 area4(리) 보조
+  const emd = best?.region?.area3?.name ?? best?.region?.area4?.name ?? null;
 
-  return NextResponse.json({ address, raw: data }, { status: r.status });
+  return NextResponse.json({ address, emd, raw: data }, { status: r.status });
 }

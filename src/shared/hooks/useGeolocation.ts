@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { useLocationStore } from "../store/location.store";
 
 export function useGeolocation(options?: { auto?: boolean }) {
@@ -20,9 +21,17 @@ export function useGeolocation(options?: { auto?: boolean }) {
         setResolving(true);
         const res = await fetch(`/api/revgeo?lat=${lat}&lng=${lng}`);
         const data = await res.json();
-        setAddress(data?.address ?? null);
+        if (!res.ok) {
+          const msg = (data as any)?.error || "주소 변환에 실패했습니다.";
+          toast.error(msg);
+          setAddress(null);
+          return;
+        }
+        // 동/읍/면(emd) 우선으로 저장, 없으면 전체 주소
+        setAddress((data as any)?.emd ?? (data as any)?.address ?? null);
       } catch (e) {
         console.error("Reverse geocoding failed", e);
+        toast.error("주소 변환 중 오류가 발생했습니다.");
         setAddress(null);
       } finally {
         setResolving(false);
@@ -34,6 +43,7 @@ export function useGeolocation(options?: { auto?: boolean }) {
   const fetchLocation = useCallback(() => {
     if (!navigator.geolocation) {
       console.error("이 브라우저는 Geolocation API를 지원하지 않습니다.");
+      toast.error("이 브라우저에서는 위치 정보를 사용할 수 없습니다.");
       return;
     }
     setLocating(true);
@@ -48,6 +58,11 @@ export function useGeolocation(options?: { auto?: boolean }) {
       },
       (err) => {
         console.error("위치 권한 거부 또는 오류:", err);
+        toast.error(
+          err?.code === 1
+            ? "위치 권한을 허용해주세요."
+            : "현재 위치를 가져올 수 없습니다.",
+        );
         setLocating(false);
       },
       { enableHighAccuracy: true },

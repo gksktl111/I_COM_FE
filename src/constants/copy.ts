@@ -4,7 +4,8 @@ export const LANDING_COPY = {
   titleEmph: "우리 동네 육아 정보",
   subtitle:
     "소아병원부터 아이 동반 카페, 어린이집까지. 지금 내 위치 기준으로 빠르게 찾고 부모 커뮤니티와 연결해요.",
-  searchPlaceholder: "지역명, 지하철역, 우편번호 또는 키워드를 입력해 보세요",
+  searchPlaceholder:
+    "원하시는 서비스를 입력해주세요. (예: 소아병원, 아이 동반 카페)",
   searchCta: "검색",
   popularLabel: "요즘 많이 찾는 키워드",
   trust: {
