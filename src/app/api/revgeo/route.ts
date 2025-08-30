@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Minimal types for Naver Reverse Geocoding response we consume
+type RevGeoRegion = {
+  area1?: { name?: string };
+  area2?: { name?: string };
+  area3?: { name?: string };
+  area4?: { name?: string };
+};
+type RevGeoLand = {
+  name?: string;
+  number?: string;
+  addition0?: { value?: string };
+  number1?: string;
+  number2?: string;
+};
+type RevGeoResult = { region?: RevGeoRegion; land?: RevGeoLand };
+type RevGeoResponse = { results?: RevGeoResult[] };
+
 const BASE = "https://maps.apigw.ntruss.com/map-reversegeocode/v2/gc";
 
 export async function GET(req: NextRequest) {
@@ -25,12 +42,12 @@ export async function GET(req: NextRequest) {
     // GET by default
   });
 
-  const data = await r.json();
+  const data = (await r.json()) as unknown;
 
   // 안전 파싱: 가장 “사람이 읽기 좋은” 주소 한 개만 뽑아 반환
-  const best = data?.results?.[0] ?? null;
+  const best: RevGeoResult | null = (data as RevGeoResponse)?.results?.[0] ?? null;
 
-  const toText = (node: any) => {
+  const toText = (node: RevGeoResult | null): string | null => {
     if (!node) return null;
     const { region, land } = node;
     const a1 = region?.area1?.name ?? "";

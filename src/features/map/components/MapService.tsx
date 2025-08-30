@@ -7,7 +7,7 @@ import { MapView } from "./MapView";
 // 지도 서비스 메인 컴포넌트
 export function MapService() {
   // 검색 결과 상태 관리
-  const [searchResults, setSearchResults] = useState<
+  const [searchResults] = useState<
     Array<{
       id: string;
       name: string;
@@ -15,7 +15,7 @@ export function MapService() {
       category: string;
     }>
   >([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   return (
     <div className="h-screen flex">

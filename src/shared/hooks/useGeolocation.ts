@@ -1,5 +1,5 @@
 "use client";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useLocationStore } from "../store/location.store";
 
 export function useGeolocation(options?: { auto?: boolean }) {
@@ -54,8 +54,12 @@ export function useGeolocation(options?: { auto?: boolean }) {
     );
   }, [setLocating, setLocation, reverseGeocode]);
 
-  // auto 옵션 필요 시(기본 비활성). 자동 실행 원하면 options?.auto === true 로 사용
-  // if (options?.auto && !location) fetchLocation();  // 원하면 이 라인 패턴으로 확장
+  // auto 옵션: 최초 마운트/변경 시 자동으로 위치를 가져옵니다.
+  useEffect(() => {
+    if (options?.auto && !location && !locating) {
+      fetchLocation();
+    }
+  }, [options?.auto, location, locating, fetchLocation]);
 
   return { location, address, locating, resolving, fetchLocation };
 }

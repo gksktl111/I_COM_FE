@@ -8,7 +8,8 @@ import { TrustSection } from "./TrustSection";
 import { useGeolocation } from "@/shared/hooks/useGeolocation";
 
 export function LandingPage() {
-  const { location } = useGeolocation({ auto: true });
+  // 위치 자동 조회만 실행(반환값 미사용)
+  useGeolocation({ auto: true });
   return (
     <div className="min-h-screen bg-white">
       <main className="mx-auto max-w-4xl px-3 pt-12 pb-16 sm:px-4 sm:pt-16 sm:pb-24 md:px-6 lg:px-8">

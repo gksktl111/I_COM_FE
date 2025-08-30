@@ -1,4 +1,4 @@
-import NaverMap from "./NaverMap";
+import { NaverMap } from "./NaverMap";
 
 export function MapView() {
   return (

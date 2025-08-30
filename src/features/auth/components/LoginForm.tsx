@@ -1,7 +1,7 @@
 "use client";
 
 // 사용하지 않는 import 제거
-import { BabyIcon, Heart } from "lucide-react";
+import { BabyIcon } from "lucide-react";
 import { SocialLoginButtons } from "./SocialLoginButtons";
 
 // 로그인 폼 컴포넌트
