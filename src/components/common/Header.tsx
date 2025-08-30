@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MapPin, FileText, Users, BabyIcon } from "lucide-react";
-import { cn } from "@/libs/utils";
+import { cn } from "@/shared/utils/shadcn_utils";
 
 // 네비게이션 아이템 타입 정의
 interface INavItem {
@@ -27,7 +27,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-sky-100 bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between">
           {/* 로고 및 내비게이션 */}
           <div className="flex items-center space-x-8">
